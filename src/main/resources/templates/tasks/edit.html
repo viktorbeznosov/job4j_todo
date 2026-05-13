@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{tasks/layout :: layout(~{::content})}">
+<th:block th:fragment="content">
+    <h1>Редактировать задачу</h1>
+    <form th:action="@{/tasks/{id}/edit(id=${task.id})}" method="post">
+        <div class="mb-3">
+            <label for="description" class="form-label">Описание</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required
+                      th:text="${task.description}"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a th:href="@{/tasks/{id}(id=${task.id})}" class="btn btn-secondary">Отмена</a>
+    </form>
+</th:block>
+</html>
