@@ -17,8 +17,8 @@ public class Main {
     @Bean(destroyMethod = "close")
     public SessionFactory sf() {
         return new Configuration()
-                .configure("hibernate.cfg.xml")
-                .addAnnotatedClass(Task.class)
-                .buildSessionFactory();
+            .configure("hibernate.cfg.xml")
+            .addAnnotatedClass(Task.class)
+            .buildSessionFactory();
     }
 }
