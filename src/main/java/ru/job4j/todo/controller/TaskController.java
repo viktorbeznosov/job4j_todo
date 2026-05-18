@@ -5,7 +5,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.job4j.todo.model.Task;
+import ru.job4j.todo.model.User;
 import ru.job4j.todo.service.TaskService;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/tasks")
@@ -14,8 +17,17 @@ public class TaskController {
 
     private final TaskService taskService;
 
+    private User getUser(HttpSession session) {
+        return (User) session.getAttribute("user");
+    }
+
     @GetMapping
-    public String getAllTasks(@RequestParam(required = false) Boolean done, Model model) {
+    public String getAllTasks(@RequestParam(required = false) Boolean done, Model model, HttpSession session) {
+        User user = getUser(session);
+        if (user == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", user);
         if (done == null) {
             model.addAttribute("tasks", taskService.findAll());
             model.addAttribute("filter", "all");
@@ -27,7 +39,12 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public String getTask(@PathVariable int id, Model model) {
+    public String getTask(@PathVariable int id, Model model, HttpSession session) {
+        User user = getUser(session);
+        if (user == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", user);
         Task task = taskService.findById(id);
         if (task == null) {
             return "redirect:/tasks";
@@ -37,24 +54,38 @@ public class TaskController {
     }
 
     @GetMapping("/create")
-    public String createForm() {
+    public String createForm(HttpSession session) {
+        if (getUser(session) == null) {
+            return "redirect:/login";
+        }
         return "tasks/create";
     }
 
     @PostMapping("/create")
-    public String create(@RequestParam String description) {
+    public String create(@RequestParam String description, HttpSession session) {
+        if (getUser(session) == null) {
+            return "redirect:/login";
+        }
         taskService.save(description);
         return "redirect:/tasks";
     }
 
     @PostMapping("/{id}/done")
-    public String markDone(@PathVariable int id) {
+    public String markDone(@PathVariable int id, HttpSession session) {
+        if (getUser(session) == null) {
+            return "redirect:/login";
+        }
         taskService.updateStatus(id, true);
         return "redirect:/tasks/" + id;
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable int id, Model model) {
+    public String editForm(@PathVariable int id, Model model, HttpSession session) {
+        User user = getUser(session);
+        if (user == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", user);
         Task task = taskService.findById(id);
         if (task == null) {
             return "redirect:/tasks";
@@ -64,7 +95,10 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/edit")
-    public String edit(@PathVariable int id, @RequestParam String description) {
+    public String edit(@PathVariable int id, @RequestParam String description, HttpSession session) {
+        if (getUser(session) == null) {
+            return "redirect:/login";
+        }
         Task task = taskService.findById(id);
         if (task != null) {
             task.setDescription(description);
@@ -74,7 +108,10 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable int id) {
+    public String delete(@PathVariable int id, HttpSession session) {
+        if (getUser(session) == null) {
+            return "redirect:/login";
+        }
         taskService.delete(id);
         return "redirect:/tasks";
     }

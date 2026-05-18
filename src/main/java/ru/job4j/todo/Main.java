@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import ru.job4j.todo.model.Task;
+import ru.job4j.todo.model.User;
 
 @SpringBootApplication
 public class Main {
@@ -19,6 +20,7 @@ public class Main {
         return new Configuration()
             .configure("hibernate.cfg.xml")
             .addAnnotatedClass(Task.class)
+            .addAnnotatedClass(User.class)
             .buildSessionFactory();
     }
 }
