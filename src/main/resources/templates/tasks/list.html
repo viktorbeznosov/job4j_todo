@@ -24,17 +24,19 @@
     
     <div class="mb-3">
         <a href="/tasks" class="btn btn-sm" 
-           th:classappend="${filter == 'all'} ? 'btn-secondary' : 'btn-outline-secondary'">Все</a>
+           th:classappend="${filter.done == null} ? 'btn-secondary' : 'btn-outline-secondary'">Все</a>
         <a href="/tasks?done=true" class="btn btn-sm"
-           th:classappend="${filter == 'done'} ? 'btn-secondary' : 'btn-outline-secondary'">Выполненные</a>
+           th:classappend="${filter.done == true} ? 'btn-secondary' : 'btn-outline-secondary'">Выполненные</a>
         <a href="/tasks?done=false" class="btn btn-sm"
-           th:classappend="${filter == 'new'} ? 'btn-secondary' : 'btn-outline-secondary'">Новые</a>
+           th:classappend="${filter.done == false} ? 'btn-secondary' : 'btn-outline-secondary'">Новые</a>
     </div>
 
+    <p class="text-danger" th:text="${message}"></p>
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Название</th>
                 <th>Описание</th>
                 <th>Дата создания</th>
                 <th>Статус</th>
@@ -44,7 +46,10 @@
             <tr th:each="task : ${tasks}">
                 <td th:text="${task.id}">1</td>
                 <td>
-                    <a th:href="@{/tasks/{id}(id=${task.id})}" th:text="${task.description}">Description</a>
+                    <a th:href="@{/tasks/{id}(id=${task.id})}" th:text="${task.title}">Title</a>
+                </td>
+                <td>
+                    <span th:text="${task.description}">Description</span>
                 </td>
                 <td th:text="${#temporals.format(task.created, 'dd.MM.yyyy HH:mm')}">01.01.2024</td>
                 <td>

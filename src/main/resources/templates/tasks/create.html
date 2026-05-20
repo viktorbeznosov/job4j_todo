@@ -17,6 +17,10 @@
     <h1>Добавить задачу</h1>
     <form th:action="@{/tasks/create}" method="post">
         <div class="mb-3">
+            <label for="title" class="form-label"><b>Название</b></label>
+            <input type="text" class="form-control" id="title" name="title" placeholder="">
+        </div>
+        <div class="mb-3">
             <label for="description" class="form-label">Описание</label>
             <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
         </div>

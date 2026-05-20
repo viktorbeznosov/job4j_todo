@@ -1,15 +1,20 @@
 package ru.job4j.todo.controller;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.job4j.todo.dto.request.tasks.GetAllTasksRequest;
 import ru.job4j.todo.model.Task;
 import ru.job4j.todo.model.User;
 import ru.job4j.todo.service.TaskService;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/tasks")
 @AllArgsConstructor
@@ -17,36 +22,49 @@ public class TaskController {
 
     private final TaskService taskService;
 
+    static private final String LOGIN_MESSAGE = "С начала авторизуйтесь на сайте";
+    static private final String TASK_NOT_FOUND = "Задача не найдена";
+
     private User getUser(HttpSession session) {
         return (User) session.getAttribute("user");
     }
 
     @GetMapping
-    public String getAllTasks(@RequestParam(required = false) Boolean done, Model model, HttpSession session) {
+    public String getAllTasks(
+        @ModelAttribute GetAllTasksRequest request,
+        @RequestParam(required = false) Boolean done,
+        Model model,
+        HttpSession session,
+        RedirectAttributes redirectAttributes
+    ) {
         User user = getUser(session);
         if (user == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
         model.addAttribute("user", user);
-        if (done == null) {
-            model.addAttribute("tasks", taskService.findAll());
-            model.addAttribute("filter", "all");
-        } else {
-            model.addAttribute("tasks", taskService.findByDone(done));
-            model.addAttribute("filter", done ? "done" : "new");
-        }
+        model.addAttribute("tasks", taskService.findByFilter(request));
+        model.addAttribute("filter", request);
+
         return "tasks/list";
     }
 
     @GetMapping("/{id}")
-    public String getTask(@PathVariable int id, Model model, HttpSession session) {
+    public String getTask(
+            @PathVariable int id,
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
         User user = getUser(session);
         if (user == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
         model.addAttribute("user", user);
         Task task = taskService.findById(id);
         if (task == null) {
+            redirectAttributes.addFlashAttribute("message", TASK_NOT_FOUND);
             return "redirect:/tasks";
         }
         model.addAttribute("task", task);
@@ -54,40 +72,59 @@ public class TaskController {
     }
 
     @GetMapping("/create")
-    public String createForm(HttpSession session) {
+    public String createForm(HttpSession session, RedirectAttributes redirectAttributes) {
         if (getUser(session) == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
         return "tasks/create";
     }
 
     @PostMapping("/create")
-    public String create(@RequestParam String description, HttpSession session) {
+    public String create(
+            @RequestParam String description,
+            @RequestParam String title,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
         if (getUser(session) == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
-        taskService.save(description);
+        taskService.save(title, description);
         return "redirect:/tasks";
     }
 
     @PostMapping("/{id}/done")
-    public String markDone(@PathVariable int id, HttpSession session) {
+    public String markDone(
+            @PathVariable int id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
         if (getUser(session) == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
-        taskService.updateStatus(id, true);
+        taskService.setDoneById(id);
         return "redirect:/tasks/" + id;
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable int id, Model model, HttpSession session) {
+    public String editForm(
+            @PathVariable int id,
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
         User user = getUser(session);
         if (user == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
         model.addAttribute("user", user);
         Task task = taskService.findById(id);
         if (task == null) {
+            redirectAttributes.addFlashAttribute("message", TASK_NOT_FOUND);
             return "redirect:/tasks";
         }
         model.addAttribute("task", task);
@@ -95,12 +132,21 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/edit")
-    public String edit(@PathVariable int id, @RequestParam String description, HttpSession session) {
+    public String edit(
+            @PathVariable int id,
+            @RequestParam String title,
+            @RequestParam String description,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
         if (getUser(session) == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
         Task task = taskService.findById(id);
         if (task != null) {
+            task.setTitle(title);
             task.setDescription(description);
             taskService.update(task);
         }
@@ -108,8 +154,9 @@ public class TaskController {
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable int id, HttpSession session) {
+    public String delete(@PathVariable int id, HttpSession session, RedirectAttributes redirectAttributes) {
         if (getUser(session) == null) {
+            redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
         taskService.delete(id);

@@ -13,6 +13,7 @@
             <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">Вход в систему</h4>
+                    <p class="text-danger" th:text="${message}"></p>
                 </div>
                 <div class="card-body">
                     <div th:if="${error}" class="alert alert-danger">
