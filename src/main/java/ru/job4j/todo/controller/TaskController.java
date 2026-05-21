@@ -121,8 +121,8 @@ public class TaskController {
             Model model
     ) {
         if (!taskService.delete(id)) {
-            model.addAttribute("message", "Ошибка удаления задачи");
-            return "errors/409";
+            model.addAttribute("message", "Задача не найдена");
+            return "errors/404";
         }
         return "redirect:/tasks";
     }
