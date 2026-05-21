@@ -99,13 +99,17 @@ public class TaskController {
     public String markDone(
             @PathVariable int id,
             HttpSession session,
-            RedirectAttributes redirectAttributes
+            RedirectAttributes redirectAttributes,
+            Model model
     ) {
         if (getUser(session) == null) {
             redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
-        taskService.setDoneById(id);
+        if (!taskService.setDoneById(id)) {
+            model.addAttribute("message", "Ошибка редактирования задачи");
+            return "errors/409";
+        }
         return "redirect:/tasks/" + id;
     }
 
@@ -144,22 +148,33 @@ public class TaskController {
             redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
-        Task task = taskService.findById(id);
-        if (task != null) {
-            task.setTitle(title);
-            task.setDescription(description);
-            taskService.update(task);
+        Task task = new Task();
+        task.setId(id);
+        task.setTitle(title);
+        task.setDescription(description);
+
+        if (!taskService.update(task)) {
+            model.addAttribute("message", "Ошибка редактирования задачи");
+            return "errors/409";
         }
         return "redirect:/tasks/" + id;
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable int id, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String delete(
+            @PathVariable int id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes,
+            Model model
+    ) {
         if (getUser(session) == null) {
             redirectAttributes.addFlashAttribute("message", LOGIN_MESSAGE);
             return "redirect:/login";
         }
-        taskService.delete(id);
+        if (!taskService.delete(id)) {
+            model.addAttribute("message", "Ошибка удаления задачи");
+            return "errors/409";
+        }
         return "redirect:/tasks";
     }
 }
