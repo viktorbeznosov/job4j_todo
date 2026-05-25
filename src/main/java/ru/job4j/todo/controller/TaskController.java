@@ -12,6 +12,7 @@ import ru.job4j.todo.model.User;
 import ru.job4j.todo.service.TaskService;
 
 import javax.servlet.http.HttpSession;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -46,12 +47,12 @@ public class TaskController {
             HttpSession session,
             RedirectAttributes redirectAttributes
     ) {
-        Task task = taskService.findById(id);
-        if (task == null) {
+        Optional<Task> task = taskService.findById(id);
+        if (task.isEmpty()) {
             redirectAttributes.addFlashAttribute("message", TASK_NOT_FOUND);
             return "redirect:/tasks";
         }
-        model.addAttribute("task", task);
+        model.addAttribute("task", task.get());
         return "tasks/detail";
     }
 
@@ -87,12 +88,12 @@ public class TaskController {
             Model model,
             RedirectAttributes redirectAttributes
     ) {
-        Task task = taskService.findById(id);
-        if (task == null) {
+        Optional<Task> task = taskService.findById(id);
+        if (task.isEmpty()) {
             redirectAttributes.addFlashAttribute("message", TASK_NOT_FOUND);
             return "redirect:/tasks";
         }
-        model.addAttribute("task", task);
+        model.addAttribute("task", task.get());
         return "tasks/edit";
     }
 

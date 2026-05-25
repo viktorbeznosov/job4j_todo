@@ -8,6 +8,7 @@ import ru.job4j.todo.store.TaskStore;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -19,7 +20,7 @@ public class TaskService {
         return taskStore.findByFilter(request);
     }
 
-    public Task findById(int id) {
+    public Optional<Task> findById(int id) {
         return taskStore.findById(id);
     }
 
